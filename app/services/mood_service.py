@@ -27,6 +27,32 @@ def get_track_mood(track_name: str, artist_name:str):
     
     return response.json()
 
+
+
+def match_mood(track_features, mood):
+    mapping = MOOD_AUDIO_FEATURE_MAP.get(mood)
+
+    if not mapping:
+        return False
+    for feature, (min_v, max_v) in mapping.items():
+        value = track_features.get(feature)
+
+        if value is None:
+            return False
+
+        if not (min_v <= value <= max_v):
+            return False
+        
+    return True
+
+def filter_tracks_by_mood(tracks, mood):
+    result = [] 
+
+    for track in tracks:
+        if match_mood(track["features"], mood):
+            result.append(track)
+    
+    return result
 # {
 #   "track": "The Masterplan",
 #   "artist": "Oasis",

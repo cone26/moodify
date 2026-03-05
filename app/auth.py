@@ -29,29 +29,7 @@ def callback(request: Request):
     try:
         access_token = sp_oauth.get_access_token(code, as_dict=False)
 
-        sp = Spotify(auth=access_token)
-        top_tracks_data = sp.current_user_top_tracks(limit=5)
-        
-        top_tracks_info = []
-        track_ids = []
-
-        for t in top_tracks_data['items']:
-            track_ids.append(t['id'])
-            top_tracks_info.append({
-                "id":t['id'],
-                "name": t['name'],
-                "artist": t['artists'][0]['name']
-            })
-      
-        if track_ids:
-            audio_features = sp.audio_features(track_ids)
-        else:   
-            audio_features = []
-        print('test')
-        for i,features in enumerate(audio_features):
-            top_tracks_info[i]['audio_features'] = features
-
-        return {"top_tracks": top_tracks_info}
+        return access_token
 
 
     except Exception as e:
