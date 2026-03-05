@@ -10,7 +10,9 @@ sp_oauth = SpotifyOAuth(
     client_id=SPOTIFY_CLIENT_ID,
     client_secret=SPOTIFY_CLIENT_SECRET,
     redirect_uri=SPOTIFY_CLIENT_URI,
-    scope=scope
+    scope=scope,
+    cache_path=None,      
+    show_dialog=True 
 )
 
 @router.get("/login")
@@ -28,20 +30,30 @@ def callback(request: Request):
         access_token = sp_oauth.get_access_token(code, as_dict=False)
 
         sp = Spotify(auth=access_token)
-        top_tracks = sp.current_user_top_tracks(limit=5)
+        top_tracks_data = sp.current_user_top_tracks(limit=5)
         
-        tracks_info = [{"name": t['name'], "artist": t['artists'][0]['name']} for t in top_tracks['items']]
-        
-        playlists = sp.current_user_playlists(limit=5)
-        playlists_info = []
-        for p in playlists.get('items',[]):
-            tracks_total = p.get('tracks', {}).get('total', 0)
-            playlists_info.append({
-                "name":p.get('name', 'Unknown'),
-                "total_tracks": tracks_total
+        top_tracks_info = []
+        track_ids = []
+
+        for t in top_tracks_data['items']:
+            track_ids.append(t['id'])
+            top_tracks_info.append({
+                "id":t['id'],
+                "name": t['name'],
+                "artist": t['artists'][0]['name']
             })
-            
-        return {"top_tracks": tracks_info, "playlists": playlists_info}
+      
+        if track_ids:
+            audio_features = sp.audio_features(track_ids)
+        else:   
+            audio_features = []
+        print('test')
+        for i,features in enumerate(audio_features):
+            top_tracks_info[i]['audio_features'] = features
+
+        return {"top_tracks": top_tracks_info}
+
+
     except Exception as e:
         return {"error": str(e)}
     # return {"access_token": access_token}
