@@ -35,6 +35,7 @@ Example moods:
 
 ## Project Structure
 
+```
 app
 ├ main.py
 ├ routes
@@ -47,6 +48,7 @@ app
 │ └ feature_service.py
 └ utils
 └ mood_mapping.py
+```
 
 ---
 
