@@ -1,11 +1,13 @@
 from fastapi import FastAPI
-from app.auth import router as auth_router
-from app.routes import audio, recommend_router
+from app.routes import (
+    audio, recommend_router, auth_router
+    )
 
-app = FastAPI(title="Moddify - Context-aware Musci Recommender")
-app.include_router(auth_router, prefix="/auth")
+app = FastAPI(title="Moddify - Context-aware Music Recommender")
+app.include_router(auth_router.router, prefix="/auth")
 app.include_router(audio.router)
 app.include_router(recommend_router.router)
+
 @app.get("/")
 def root():
     return {"message": "Hello Moodify!"}
