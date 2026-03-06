@@ -2,6 +2,8 @@ from app.utils.mood_mapping import MOOD_AUDIO_FEATURE_MAP
 import requests
 import os
 from dotenv import load_dotenv
+import httpx
+import asyncio
 
 load_dotenv()
 
@@ -32,7 +34,7 @@ def filter_tracks_by_mood(tracks_with_features, mood):
     
     return filtered_tracks
 
-def get_audio_features(track_id):
+async def get_audio_features(track_id):
 
     headers = {
         "X-RapidAPI-Key": RAPIDAPI_KEY
@@ -41,24 +43,16 @@ def get_audio_features(track_id):
     params = {
         "track_id": track_id
     }
-    url = "https://track-analysis.p.rapidapi.com/pktx/analysis"
-    response = requests.get(url, headers=headers, params=params)
-    print(response.status_code)
-    if response.status_code != 200:
-        return None
 
-    return response.json()
+    try:
+        url = "https://track-analysis.p.rapidapi.com/pktx/analysis"
+        response = await client.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            return None
 
-def enrich_tracks_with_features(tracks):
-    tracks_with_features = []
-    for track in tracks:
-        features = get_audio_features(track["id"])
+        features = response.json()
 
-        print(features)
-        if not features:
-            continue
-        
-        tracks_with_features.append({
+        return {
             **track,
             "features": {
                 "valence": features.get("valence"),
@@ -67,6 +61,18 @@ def enrich_tracks_with_features(tracks):
                 "acousticness": features.get("acousticness"),
                 "tempo": features.get("tempo")
             }
-        })
+        }
+    except Exception:
+        return None
+    
 
-    return tracks_with_features
+async def enrich_tracks_with_features(tracks):
+    async with httpx.AsyncClient(timeout=10) as client:
+        tasks = [
+            get_audio_features(client, track)
+            for track in tracks
+        ]
+
+        result = await asyncio.gather(*tasks)
+
+    return [r for r in results if r]

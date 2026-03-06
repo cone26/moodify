@@ -15,7 +15,7 @@ def recommend(mood: str):
     # user top tracks
     tracks = get_top_tracks(sp)
     # get audio features
-    tracks_with_features = enrich_tracks_with_features(tracks)
+    tracks_with_features = await enrich_tracks_with_features(tracks)
     # filter by mood
     recommended = filter_tracks_by_mood(tracks_with_features, mood)
 
