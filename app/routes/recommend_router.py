@@ -9,7 +9,7 @@ from app.services.feature_service import (
 router = APIRouter()
 
 @router.get("/recommend")
-def recommend(mood: str):
+async def recommend(mood: str):
     sp = Spotify(auth="access_token")
 
     # user top tracks
